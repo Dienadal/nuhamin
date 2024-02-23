@@ -9,7 +9,7 @@
     <h1 align="center">Welcome to FREE ONLINE BOOKS</h1>
     <h2> Search books</h2>
     <form id="book-search">
-        <input type="text"id="search-box"
+        <input type="text" id="search-box"
         placeholder="Enter book title...">
         <button type="submit">search</button>
     </form>
@@ -18,17 +18,94 @@
          <!-- <!- book will be displayed here using JS-> -->
     </div> 
     <!-- <!-include JS for handing the search functionality--> 
-     <script>
-        document.getElementById('search-box');
-        const searchTerm=
-        serachBox.value.trim();
-        if (searchTerm){
-            updateBooklist (searchTerm);//
-            placeholderfunction}
-        functionupdateBooklist(searchTerm)
-        {//fetch books from the server using a server-side language//and display them in the 'book-list'div
-    }
-     </script>
+    <div id="Book-list"> 
+        <!-- <!- book will be displayed here using JS-> -->
+      </div>
+      <button id="download-button" style="display: none;">Download PDF</button>
+    <script>
+    // get the form, input, and download button elements
+const form = document.getElementById("book-search");
+const input = document.getElementById("search-box");
+const downloadButton = document.getElementById("download-button");
+
+// listen for form submission
+form.addEventListener("submit", (e) => {
+  e.preventDefault(); // prevent the page from refreshing
+  const searchTerm = input.value.trim(); // get the value of the input
+
+  // check if the input is empty
+  if (searchTerm === "") {
+    alert("Please enter a search term");
+    return;
+  }
+
+  // make a GET request to the API
+  fetch(`https://www.googleapis.com/books/v1/volumes?q=${searchTerm}`)
+    .then((response) => response.json())
+    .then((data) => {
+      // clear the book list
+      const bookList = document.getElementById("Book-list");
+      bookList.innerHTML = "";
+
+      // check if there are any search results
+      if (data.items && data.items.length > 0) {
+        // loop through the data and display the books
+        data.items.forEach((book) => {
+          const div = document.createElement("div");
+          const link = document.createElement("a");
+          link.href = book.volumeInfo.previewLink;
+          link.textContent = book.volumeInfo.title;
+          link.target = "_blank";
+          div.appendChild(link);
+          bookList.appendChild(div);
+
+          // show the download button
+          downloadButton.style.display = "block";
+
+          // add a click event listener to the link
+          link.addEventListener("click", (e) => {
+            e.preventDefault(); // prevent the link from opening in a new tab
+            downloadPdf(book.volumeInfo.previewLink);
+          });
+        });
+      } else {
+        // show a message if there are no search results
+        bookList.textContent = "No search results found.";
+      }
+    })
+    .catch((error) => {
+      console.error("Error:", error);
+      alert("An error occurred while searching for books.");
+    });
+});
+
+// define the downloadPdf function
+function downloadPdf(url) {
+  // create a new Blob object with the PDF URL
+  fetch(url)
+    .then((response) => response.blob())
+    .then((blob) => {
+      // create a new download link element
+      const downloadLink = document.createElement("a");
+      downloadLink.href = URL.createObjectURL(blob);
+      downloadLink.download = "book.pdf";
+      downloadLink.style.display = "none";
+
+      // add the download link to the document
+      document.body.appendChild(downloadLink);
+
+      // trigger the download
+      downloadLink.click();
+
+      // remove the download link from the document
+      document.body.removeChild(downloadLink);
+    })
+    .catch((error) => {
+      console.error("Error:", error);
+      alert("An error occurred while downloading the PDF.");
+    });
+}
+</script>
 <style>
     body{background-color: lemonchiffon;
     color: rgb(226, 82, 25);}
